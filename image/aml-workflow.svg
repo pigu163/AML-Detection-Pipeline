@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="aml-workflow-title aml-workflow-desc" id="aml-workflow-root">
+  <title id="aml-workflow-title">AML detection workflow</title>
+  <desc id="aml-workflow-desc">Synthetic transactions move through Spark processing, historical features, chronological modeling, evaluation and explanations, with MLflow tracking the experiments.</desc>
+  <defs>
+      <style>#aml-workflow-root { color: #2d3142; font-family: Arial, sans-serif; }
+      #aml-workflow-root .diagram-container { width: 100%; overflow-x: auto; }
+      @media print {
+#aml-workflow-root .diagram-container { overflow-x: visible; }
+}
+      #aml-workflow-root .heading { font: 600 25px Arial, sans-serif; fill: #2d3142; }
+      #aml-workflow-root .kicker { font: 600 10px Arial, sans-serif; letter-spacing: 1.4px; fill: #bf4520; }
+      #aml-workflow-root .node-title { font: 600 15px Arial, sans-serif; fill: #2d3142; }
+      #aml-workflow-root .detail { font: 12px Arial, sans-serif; fill: #4f5d75; }
+      #aml-workflow-root .step { font: 600 10px Arial, sans-serif; fill: #bf4520; letter-spacing: 1px; }
+      #aml-workflow-root .node { fill: #ffffff; stroke: #bfc0c0; stroke-width: 1; }
+      #aml-workflow-root .accent-node { fill: #fbf3f0; stroke: #bf4520; stroke-width: 1.5; }
+      #aml-workflow-root .edge { fill: none; stroke: #4f5d75; stroke-width: 1.5; marker-end: url(#aml-workflow-arrow); }
+      #aml-workflow-root .footer-label { font: 600 12px Arial, sans-serif; fill: #2d3142; }
+      #aml-workflow-root .footer-text { font: 12px Arial, sans-serif; fill: #4f5d75; }</style>
+    <marker id="aml-workflow-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 8 4 L 0 8 z" fill="#4f5d75"/></marker>
+  </defs>
+  <rect x="0" y="0" width="960" height="600" fill="#f5f5f5"/>
+  <text x="40" y="42" class="kicker">TRANSACTION-LEVEL AML DETECTION</text>
+  <text x="40" y="78" class="heading">From transaction history to review</text>
+  <text x="40" y="101" class="detail">A reproducible workflow for prioritizing synthetic transactions</text>
+
+  <g aria-hidden="true">
+    <path class="edge" d="M 240 212 H 264"/><path class="edge" d="M 468 212 H 492"/><path class="edge" d="M 696 212 H 720"/>
+    <path class="edge" d="M 820 280 V 336"/>
+    <path class="edge" d="M 724 400 H 700"/><path class="edge" d="M 496 400 H 472"/><path class="edge" d="M 268 400 H 244"/>
+  </g>
+
+  <g>
+    <rect class="node" x="40" y="144" width="200" height="136" rx="6"/>
+    <text class="step" x="56" y="169">01 · INPUT</text><text class="node-title" x="56" y="195">IBM AML data</text>
+    <text class="detail" x="56" y="219">HI-Small + LI-Small</text><text class="detail" x="56" y="239">Labeled transactions</text><text class="detail" x="56" y="259">Accounts, amounts, time</text>
+
+    <rect class="node" x="268" y="144" width="200" height="136" rx="6"/>
+    <text class="step" x="284" y="169">02 · PREPARE</text><text class="node-title" x="284" y="195">PySpark processing</text>
+    <text class="detail" x="284" y="219">Clean + type fields</text><text class="detail" x="284" y="239">Preserve account IDs</text><text class="detail" x="284" y="259">Store as Parquet</text>
+
+    <rect class="accent-node" x="496" y="144" width="200" height="136" rx="6"/>
+    <text class="step" x="512" y="169">03 · CONTEXT</text><text class="node-title" x="512" y="195">Historical features</text>
+    <text class="detail" x="512" y="219">Velocity + amounts</text><text class="detail" x="512" y="239">Counterparties + flows</text><text class="detail" x="512" y="259">Past transactions only</text>
+
+    <rect class="node" x="724" y="144" width="200" height="136" rx="6"/>
+    <text class="step" x="740" y="169">04 · SPLIT</text><text class="node-title" x="740" y="195">Chronological data</text>
+    <text class="detail" x="740" y="219">Train → validation → test</text><text class="detail" x="740" y="239">Separate HI + LI</text><text class="detail" x="740" y="259">HI → LI comparison</text>
+
+    <rect class="node" x="724" y="336" width="200" height="128" rx="6"/>
+    <text class="step" x="740" y="361">05 · MODEL</text><text class="node-title" x="740" y="387">Baseline + XGBoost</text>
+    <text class="detail" x="740" y="411">Handle class imbalance</text><text class="detail" x="740" y="431">Tune on validation data</text><text class="detail" x="740" y="451">Select alert threshold</text>
+
+    <rect class="node" x="496" y="336" width="200" height="128" rx="6"/>
+    <text class="step" x="512" y="361">06 · EVALUATE</text><text class="node-title" x="512" y="387">Held-out assessment</text>
+    <text class="detail" x="512" y="411">Precision · recall · F1</text><text class="detail" x="512" y="431">PR-AUC · ROC-AUC</text><text class="detail" x="512" y="451">Precision / recall at K</text>
+
+    <rect class="node" x="268" y="336" width="200" height="128" rx="6"/>
+    <text class="step" x="284" y="361">07 · EXPLAIN</text><text class="node-title" x="284" y="387">SHAP explanations</text>
+    <text class="detail" x="284" y="411">Global feature patterns</text><text class="detail" x="284" y="431">Individual transactions</text><text class="detail" x="284" y="451">False positives / negatives</text>
+
+    <rect class="accent-node" x="40" y="336" width="200" height="128" rx="6"/>
+    <text class="step" x="56" y="361">08 · REVIEW</text><text class="node-title" x="56" y="387">Prioritized alerts</text>
+    <text class="detail" x="56" y="411">Rank by risk score</text><text class="detail" x="56" y="431">Review within capacity</text><text class="detail" x="56" y="451">Interpret with evidence</text>
+  </g>
+  <rect x="40" y="500" width="884" height="58" rx="6" fill="#ececec" stroke="#bfc0c0"/>
+  <text class="footer-label" x="56" y="525">MLflow · experiment tracking</text>
+  <text class="footer-text" x="56" y="545">Datasets and splits   /   feature configuration   /   parameters   /   metrics, figures and model artifacts</text>
+  <text class="detail" x="40" y="585">Scores guide review; they do not establish money laundering.</text>
+</svg>

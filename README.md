@@ -1,27 +1,21 @@
-# AML-Detection-Pipeline
-An end-to-end Anti-Money Laundering (AML) detection pipeline using PySpark for transaction feature engineering, XGBoost for risk prediction, and MLflow for experiment tracking, with SHAP-based explainability.
+# AML Detection Pipeline
 
-## Prepare transaction data
+An end-to-end anti-money laundering detection project using synthetic financial transactions. It brings together PySpark feature engineering, XGBoost classification, MLflow experiment tracking, and SHAP explanations to study how transaction behavior can support alert prioritization.
 
-With Java and the project dependencies installed, run:
+![AML detection workflow](image/aml-workflow.svg)
 
-```bash
-uv run python script/data/prepare_transactions.py
-```
+## Approach
 
-The script reads the HI-Small and LI-Small transaction CSV files from `dataset/` and writes Parquet datasets to `dataset/processed/HI-Small/` and `dataset/processed/LI-Small/`. Completed outputs are skipped on subsequent runs. Remove the relevant processed directory to regenerate it after changing the source or preprocessing.
+The project uses the IBM AML HI-Small and LI-Small datasets, where each record represents a transaction between accounts. PySpark prepares the data and builds transaction-level features from account and counterparty history: transaction frequency, amounts, incoming and outgoing activity, and reciprocal transfers. Historical features use only transactions available before the prediction time.
 
-Bank and account identifiers remain strings. Missing currency and payment format values become `Unknown`; missing account identifiers, timestamps, amounts, and labels remain null.
+Chronological training, validation, and test splits preserve the ordering of transactions. A simple baseline provides a reference for XGBoost, while validation data supports model selection and alert-threshold selection. Evaluation focuses on precision, recall, F1, average precision, ROC-AUC, and precision and recall at a given review capacity.
 
-## Calculate transaction features
+MLflow organizes experiment configurations, metrics, and model artifacts. SHAP provides global feature importance and individual transaction explanations. Separate HI and LI experiments, together with an HI-to-LI evaluation, support comparison across the two synthetic datasets.
 
-```python
-from pyspark.sql import SparkSession
-from script.data.transaction_features import transaction_features
+## Interpretation
 
-spark = SparkSession.builder.master("local[2]").appName("AML features").getOrCreate()
-transactions = spark.read.parquet("dataset/processed/HI-Small")
-features = transaction_features(transactions)
-```
+The model scores transactions for review; a score or behavioral pattern is not proof of money laundering. The datasets are synthetic, and their results should be interpreted within that setting. The project is designed for reproducible local experiments, using Spark in local mode and native XGBoost after feature processing.
 
-The function returns a lazy Spark DataFrame and does not save it. Run HI-Small and LI-Small separately, using the complete history for each dataset. Account and pair features use historical windows ending before the current transaction time; distinct counterparties use a one-day window. Spark's `day_of_week` is 1 for Sunday through 7 for Saturday. The input `is_laundering` column remains available as the label and must be excluded from model features.
+## Tools
+
+Python · PySpark · XGBoost · MLflow · SHAP · scikit-learn
