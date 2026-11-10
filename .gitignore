@@ -1,0 +1,10 @@
+/dataset/
+/paper/
+/.venv/
+/.env
+__pycache__/
+*.py[cod]
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+mlruns/
