@@ -9,6 +9,7 @@ dependencies = [
     "mlflow>=3.18.0",
     "numpy>=2.5.4",
     "pandas>=2.2,<3",
+    "psutil>=7.2.2",
     "pyspark[sql]>=4.3.0",
     "scikit-learn>=1.9.1",
     "shap>=0.54.1",

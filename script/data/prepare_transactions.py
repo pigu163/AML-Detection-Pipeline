@@ -1,11 +1,17 @@
 """Prepare IBM AML transaction CSV files as Parquet."""
 
+import argparse
+import sys
 from pathlib import Path
+
+# Keep the original direct-script command working alongside python -m.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
-ROOT = Path(__file__).resolve().parents[2]
+from script.spark import ROOT, add_spark_arguments, create_spark, parquet_complete
+
 DATASET = ROOT / "dataset"
 # The CSV has two columns named Account, so the order must match the source file.
 COLUMNS = [
@@ -23,7 +29,7 @@ COLUMNS = [
 ]
 
 
-def read_transactions(spark: SparkSession, path: Path) -> DataFrame:
+def read_transactions(spark: SparkSession, path: str | Path) -> DataFrame:
     """Read the duplicate Account headers by their column positions."""
     return spark.read.option("header", True).csv(str(path)).toDF(*COLUMNS)
 
@@ -47,34 +53,39 @@ def clean_transactions(transactions: DataFrame) -> DataFrame:
 
 
 def main() -> None:
-    destinations = {
-        name: DATASET / "processed" / name for name in ("HI-Small", "LI-Small")
-    }
-    # Spark writes _SUCCESS only after the Parquet output completes.
-    pending = [
-        name for name, path in destinations.items() if not (path / "_SUCCESS").exists()
-    ]
-    for name in destinations.keys() - pending:
-        print(f"Skipping {name}: Parquet already exists.", flush=True)
-    if not pending:
-        return
-
-    # Start Spark only when at least one dataset still needs processing.
-    spark = (
-        SparkSession.builder.master("local[2]")
-        .appName("AML data preparation")
-        .getOrCreate()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--dataset", choices=("HI-Small", "LI-Small", "all"), default="all"
     )
-    spark.sparkContext.setLogLevel("ERROR")
+    parser.add_argument(
+        "--input-root",
+        default=str(DATASET),
+        help="Root containing each dataset's CSV directory; accepts shared URIs.",
+    )
+    parser.add_argument("--output-root", default=str(DATASET / "processed"))
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Rebuild completed Parquet output after changing preprocessing.",
+    )
+    add_spark_arguments(parser)
+    args = parser.parse_args()
+    spark = create_spark("AML data preparation", args)
     try:
-        for name in pending:
-            source = DATASET / name / f"{name}_Trans.csv"
+        names = ("HI-Small", "LI-Small") if args.dataset == "all" else (args.dataset,)
+        for name in names:
+            destination = f"{args.output_root.rstrip('/')}/{name}"
+            # Check the success marker on Spark's filesystem, which may be remote.
+            if not args.overwrite and parquet_complete(spark, destination):
+                print(f"Skipping {name}: Parquet already exists.", flush=True)
+                continue
+            source = f"{args.input_root.rstrip('/')}/{name}/{name}_Trans.csv"
             print(f"Preparing {name}...", flush=True)
-            # Overwrite incomplete output; completed datasets were skipped above.
+            # Completed output is retained unless --overwrite was requested.
             clean_transactions(read_transactions(spark, source)).write.mode(
                 "overwrite"
-            ).parquet(str(destinations[name]))
-            print(f"Saved {destinations[name]}", flush=True)
+            ).parquet(destination)
+            print(f"Saved {destination}", flush=True)
     finally:
         spark.stop()
 
